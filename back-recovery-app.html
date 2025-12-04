@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Back Recovery Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #2d5016;
+            --primary-light: #4a7c2a;
+            --secondary: #e8943e;
+            --bg: #faf8f3;
+            --bg-card: #ffffff;
+            --text: #1a1a1a;
+            --text-light: #666666;
+            --border: #e0ddd5;
+            --success: #4a7c2a;
+            --warning: #e8943e;
+            --error: #c44536;
+            --shadow: rgba(45, 80, 22, 0.08);
+        }
+        
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 80px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Week Selector */
+        .week-selector {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        
+        .week-selector h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .week-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        .week-btn {
+            padding: 12px 8px;
+            border: 2px solid var(--border);
+            background: var(--bg);
+            border-radius: 10px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text);
+        }
+        
+        .week-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .week-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .week-btn.completed {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        
+        /* Phase Badge */
+        .phase-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 10px;
+            font-family: 'Space Mono', monospace;
+        }
+        
+        .phase-1 {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .phase-2 {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .phase-3 {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        /* Pain Tracker */
+        .pain-tracker {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        
+        .pain-tracker h3 {
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .pain-scale {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+        
+        .pain-level {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .pain-level:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+        }
+        
+        .pain-level.selected {
+            background: var(--error);
+            color: white;
+            border-color: var(--error);
+        }
+        
+        .pain-level[data-level="0"],
+        .pain-level[data-level="1"],
+        .pain-level[data-level="2"] {
+            border-color: var(--success);
+        }
+        
+        .pain-level[data-level="0"].selected,
+        .pain-level[data-level="1"].selected,
+        .pain-level[data-level="2"].selected {
+            background: var(--success);
+        }
+        
+        /* Exercise List */
+        .exercise-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px var(--shadow);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .exercise-card.completed {
+            opacity: 0.7;
+            border-left-color: var(--success);
+        }
+        
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .exercise-name {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            flex: 1;
+        }
+        
+        .complete-checkbox {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            border: 3px solid var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .complete-checkbox:hover {
+            background: var(--primary-light);
+            transform: scale(1.1);
+        }
+        
+        .complete-checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+        
+        .complete-checkbox.checked::after {
+            content: "✓";
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .exercise-details {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .exercise-details strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+        
+        .exercise-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: white;
+        }
+        
+        /* Timer */
+        .timer-display {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 15px 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        /* Progress */
+        .progress-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .progress-header h3 {
+            font-family: 'Space Mono', monospace;
+            color: var(--primary);
+        }
+        
+        .progress-percent {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+        
+        .progress-bar {
+            height: 12px;
+            background: var(--bg);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat-box {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+        
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px var(--shadow);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 20px;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+        }
+        
+        .nav-icon {
+            font-size: 1.5rem;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        
+        .video-link {
+            display: block;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: 10px;
+            margin: 10px 0;
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .video-link:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        /* Hidden sections */
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .exercise-card {
+            animation: slideIn 0.4s ease forwards;
+        }
+        
+        .exercise-card:nth-child(1) { animation-delay: 0.1s; }
+        .exercise-card:nth-child(2) { animation-delay: 0.2s; }
+        .exercise-card:nth-child(3) { animation-delay: 0.3s; }
+        .exercise-card:nth-child(4) { animation-delay: 0.4s; }
+        .exercise-card:nth-child(5) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏃 Back Recovery</h1>
+        <div class="subtitle">Your path to pain-free running</div>
+    </div>
+    
+    <div class="container">
+        <!-- TODAY Section -->
+        <div id="today-section" class="section active">
+            <!-- Week Selector -->
+            <div class="week-selector">
+                <h2>Select Your Week</h2>
+                <div class="week-buttons" id="weekButtons"></div>
+                <div id="phaseBadge"></div>
+            </div>
+            
+            <!-- Pain Tracker -->
+            <div class="pain-tracker">
+                <h3>How's Your Pain Today?</h3>
+                <div class="pain-scale" id="painScale"></div>
+                <p style="text-align: center; color: var(--text-light); font-size: 0.85rem; margin-top: 10px;">
+                    0 = No pain • 10 = Severe pain
+                </p>
+            </div>
+            
+            <!-- Today's Exercises -->
+            <div id="exerciseList"></div>
+        </div>
+        
+        <!-- PROGRESS Section -->
+        <div id="progress-section" class="section">
+            <div class="progress-section">
+                <div class="progress-header">
+                    <h3>Overall Progress</h3>
+                    <div class="progress-percent" id="overallPercent">0%</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="overallProgress" style="width: 0%"></div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="daysCompleted">0</div>
+                        <div class="stat-label">Days Completed</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="currentStreak">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="avgPain">-</div>
+                        <div class="stat-label">Avg Pain</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="weeksLeft">12</div>
+                        <div class="stat-label">Weeks Left</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Week by Week Progress -->
+            <div class="progress-section">
+                <h3 style="font-family: 'Space Mono', monospace; color: var(--primary); margin-bottom: 15px;">
+                    Week by Week
+                </h3>
+                <div id="weekProgress"></div>
+            </div>
+        </div>
+        
+        <!-- RESOURCES Section -->
+        <div id="resources-section" class="section">
+            <div class="progress-section">
+                <h3 style="font-family: 'Space Mono', monospace; color: var(--primary); margin-bottom: 15px;">
+                    📺 Video Resources
+                </h3>
+                <a href="https://www.youtube.com/results?search_query=bob+and+brad+hip+flexor+stretch" 
+                   target="_blank" class="video-link">
+                    Hip Flexor Stretches
+                </a>
+                <a href="https://www.youtube.com/results?search_query=dead+bug+exercise+tutorial" 
+                   target="_blank" class="video-link">
+                    Dead Bug Exercise
+                </a>
+                <a href="https://www.youtube.com/results?search_query=bird+dog+exercise+back+pain" 
+                   target="_blank" class="video-link">
+                    Bird Dog Exercise
+                </a>
+                <a href="https://www.youtube.com/results?search_query=glute+bridge+exercise" 
+                   target="_blank" class="video-link">
+                    Glute Bridges
+                </a>
+                <a href="https://www.youtube.com/results?search_query=clamshell+exercise+tutorial" 
+                   target="_blank" class="video-link">
+                    Clamshell Exercise
+                </a>
+                <a href="https://www.youtube.com/results?search_query=plank+exercise+beginners" 
+                   target="_blank" class="video-link">
+                    Plank Exercise
+                </a>
+            </div>
+            
+            <div class="progress-section">
+                <h3 style="font-family: 'Space Mono', monospace; color: var(--primary); margin-bottom: 15px;">
+                    🚨 Red Flags - See Doctor If:
+                </h3>
+                <ul style="color: var(--text-light); line-height: 2; padding-left: 20px;">
+                    <li>Sharp, shooting pain</li>
+                    <li>Pain radiating down legs</li>
+                    <li>Numbness or tingling</li>
+                    <li>Pain getting worse over time</li>
+                    <li>Loss of bladder/bowel control</li>
+                </ul>
+            </div>
+            
+            <div class="progress-section">
+                <h3 style="font-family: 'Space Mono', monospace; color: var(--primary); margin-bottom: 15px;">
+                    💡 Quick Tips
+                </h3>
+                <ul style="color: var(--text-light); line-height: 2; padding-left: 20px;">
+                    <li>Start too easy - build slowly</li>
+                    <li>Consistency beats intensity</li>
+                    <li>Stretch hip flexors daily</li>
+                    <li>Warm up before every run</li>
+                    <li>Pain is not linear - ups and downs are normal</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showSection('today')">
+            <div class="nav-icon">📋</div>
+            <div>Today</div>
+        </div>
+        <div class="nav-item" onclick="showSection('progress')">
+            <div class="nav-icon">📊</div>
+            <div>Progress</div>
+        </div>
+        <div class="nav-item" onclick="showSection('resources')">
+            <div class="nav-icon">📚</div>
+            <div>Resources</div>
+        </div>
+    </div>
+    
+    <!-- Timer Modal -->
+    <div id="timerModal" class="modal">
+        <div class="modal-content" style="position: relative;">
+            <div class="modal-close" onclick="closeTimer()">×</div>
+            <div class="modal-header" id="timerExerciseName">Exercise Timer</div>
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            <div class="timer-controls">
+                <button class="btn btn-primary" onclick="startTimer()">Start</button>
+                <button class="btn btn-secondary" onclick="pauseTimer()">Pause</button>
+                <button class="btn btn-secondary" onclick="resetTimer()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Exercise Database
+        const exercises = {
+            'week1-4': [
+                {
+                    name: 'Hip Flexor Stretch',
+                    reps: '30 sec each side, 2-3x',
+                    description: 'Kneel on pillow, lean forward until you feel stretch',
+                    videoSearch: 'bob and brad hip flexor stretch',
+                    timer: 30
+                },
+                {
+                    name: 'Dead Bug',
+                    reps: '8-10 reps',
+                    description: 'Lie on back, press lower back to floor, extend opposite arm and leg',
+                    videoSearch: 'dead bug exercise tutorial',
+                    timer: 0
+                },
+                {
+                    name: 'Bird Dog',
+                    reps: '5-10 sec hold each side',
+                    description: 'Hands and knees, extend opposite arm and leg, keep back flat',
+                    videoSearch: 'bird dog exercise back pain',
+                    timer: 10
+                },
+                {
+                    name: 'Glute Bridges',
+                    reps: '10-12 reps, 2 sets',
+                    description: 'Lie on back, lift hips, squeeze glutes at top for 10 seconds',
+                    videoSearch: 'glute bridge exercise',
+                    timer: 10
+                },
+                {
+                    name: "Child's Pose",
+                    reps: '30-60 seconds',
+                    description: 'Rest position - sit back on heels, extend arms forward',
+                    videoSearch: 'childs pose yoga',
+                    timer: 60
+                }
+            ],
+            'week3-4': [
+                {
+                    name: 'Hip Flexor Stretch',
+                    reps: '45 sec each side',
+                    description: 'Kneel on pillow, lean forward until you feel stretch',
+                    videoSearch: 'bob and brad hip flexor stretch',
+                    timer: 45
+                },
+                {
+                    name: 'Dead Bug',
+                    reps: '12-15 reps',
+                    description: 'Hold extended position for 2 seconds',
+                    videoSearch: 'dead bug exercise tutorial',
+                    timer: 0
+                },
+                {
+                    name: 'Bird Dog',
+                    reps: '10 sec hold each side',
+                    description: 'Focus on opposite arm and leg',
+                    videoSearch: 'bird dog exercise back pain',
+                    timer: 10
+                },
+                {
+                    name: 'Glute Bridges',
+                    reps: '12-15 reps + singles',
+                    description: 'Add 3-5 single-leg reps each side',
+                    videoSearch: 'single leg glute bridge',
+                    timer: 10
+                },
+                {
+                    name: 'Clamshells',
+                    reps: '15 each side, 2 sets',
+                    description: 'Lie on side, open top knee like a clamshell',
+                    videoSearch: 'clamshell exercise',
+                    timer: 0
+                },
+                {
+                    name: 'Cat-Cow Stretch',
+                    reps: '10 slow cycles',
+                    description: 'Arch and round back slowly',
+                    videoSearch: 'cat cow stretch',
+                    timer: 0
+                }
+            ],
+            'week5-10': [
+                {
+                    name: 'Plank (Modified)',
+                    reps: '20-30 sec, 3 sets',
+                    description: 'On knees and forearms, keep body straight',
+                    videoSearch: 'beginner plank on knees',
+                    timer: 30
+                },
+                {
+                    name: 'Side Plank (Modified)',
+                    reps: '10-20 sec each, 2-3 sets',
+                    description: 'Elbow under shoulder, lift hips',
+                    videoSearch: 'modified side plank',
+                    timer: 20
+                },
+                {
+                    name: 'Dead Bug (Advanced)',
+                    reps: '15-20 reps',
+                    description: 'Slower tempo - 3 seconds out, 3 seconds back',
+                    videoSearch: 'dead bug exercise',
+                    timer: 0
+                },
+                {
+                    name: 'Glute Bridge Variations',
+                    reps: '12-15 reps, 3 sets',
+                    description: 'Single-leg bridges (5-8 each side)',
+                    videoSearch: 'glute bridge variations',
+                    timer: 0
+                },
+                {
+                    name: 'Clamshells with Band',
+                    reps: '20 each side, 2 sets',
+                    description: 'Place resistance band above knees',
+                    videoSearch: 'banded clamshells',
+                    timer: 0
+                },
+                {
+                    name: 'Bodyweight Squats',
+                    reps: '10-15 reps, 2-3 sets',
+                    description: 'Feet shoulder-width, push hips back',
+                    videoSearch: 'proper squat form',
+                    timer: 0
+                },
+                {
+                    name: 'Hip Flexor Stretch',
+                    reps: '30 sec each side',
+                    description: 'Daily - never skip!',
+                    videoSearch: 'hip flexor stretch',
+                    timer: 30
+                }
+            ],
+            'week11-12': [
+                {
+                    name: 'Pre-Run Warm-up',
+                    reps: '5-10 minutes',
+                    description: 'Hip flexors, clamshells, glute bridges, leg swings',
+                    videoSearch: 'running warm up routine',
+                    timer: 600
+                },
+                {
+                    name: 'Walk-Run Intervals',
+                    reps: '1 min jog, 2 min walk × 8-10',
+                    description: 'Week 11: Build gradually',
+                    videoSearch: 'couch to 5k intervals',
+                    timer: 0
+                },
+                {
+                    name: 'Core Circuit',
+                    reps: '2-3 rounds',
+                    description: 'Plank 60s, side plank 45s, dead bug 15, bird dog 10',
+                    videoSearch: 'core circuit routine',
+                    timer: 0
+                },
+                {
+                    name: 'Strength Maintenance',
+                    reps: '2-3x per week',
+                    description: 'Full lower body and core routine',
+                    videoSearch: 'runner strength training',
+                    timer: 0
+                }
+            ]
+        };
+        
+        // State Management
+        let currentWeek = 1;
+        let painLevel = null;
+        let completedExercises = new Set();
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let timerRunning = false;
+        
+        // Load saved data
+        function loadData() {
+            const saved = localStorage.getItem('backRecoveryData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                currentWeek = data.currentWeek || 1;
+                completedExercises = new Set(data.completedExercises || []);
+            }
+        }
+        
+        // Save data
+        function saveData() {
+            const data = {
+                currentWeek,
+                completedExercises: Array.from(completedExercises),
+                lastUpdated: new Date().toISOString()
+            };
+            localStorage.setItem('backRecoveryData', JSON.stringify(data));
+        }
+        
+        // Initialize
+        function init() {
+            loadData();
+            renderWeekButtons();
+            renderPainScale();
+            updateExercises();
+            updateProgress();
+        }
+        
+        // Render week buttons
+        function renderWeekButtons() {
+            const container = document.getElementById('weekButtons');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= 12; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'week-btn';
+                btn.textContent = `W${i}`;
+                btn.onclick = () => selectWeek(i);
+                
+                if (i === currentWeek) {
+                    btn.classList.add('active');
+                }
+                
+                container.appendChild(btn);
+            }
+            
+            updatePhaseBadge();
+        }
+        
+        // Update phase badge
+        function updatePhaseBadge() {
+            const badge = document.getElementById('phaseBadge');
+            let phase, text;
+            
+            if (currentWeek <= 4) {
+                phase = 'phase-1';
+                text = 'Phase 1: Control';
+            } else if (currentWeek <= 10) {
+                phase = 'phase-2';
+                text = 'Phase 2: Build';
+            } else {
+                phase = 'phase-3';
+                text = 'Phase 3: Maintain & Run';
+            }
+            
+            badge.innerHTML = `<span class="phase-badge ${phase}">${text}</span>`;
+        }
+        
+        // Select week
+        function selectWeek(week) {
+            currentWeek = week;
+            completedExercises.clear();
+            saveData();
+            renderWeekButtons();
+            updateExercises();
+        }
+        
+        // Render pain scale
+        function renderPainScale() {
+            const container = document.getElementById('painScale');
+            container.innerHTML = '';
+            
+            for (let i = 0; i <= 10; i++) {
+                const btn = document.createElement('div');
+                btn.className = 'pain-level';
+                btn.setAttribute('data-level', i);
+                btn.textContent = i;
+                btn.onclick = () => selectPainLevel(i);
+                container.appendChild(btn);
+            }
+        }
+        
+        // Select pain level
+        function selectPainLevel(level) {
+            painLevel = level;
+            document.querySelectorAll('.pain-level').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.querySelector(`[data-level="${level}"]`).classList.add('selected');
+            
+            // Save pain level with date
+            const painData = JSON.parse(localStorage.getItem('painData') || '[]');
+            painData.push({
+                date: new Date().toISOString(),
+                level: level,
+                week: currentWeek
+            });
+            localStorage.setItem('painData', JSON.stringify(painData));
+            updateProgress();
+        }
+        
+        // Update exercises
+        function updateExercises() {
+            const container = document.getElementById('exerciseList');
+            container.innerHTML = '';
+            
+            let exerciseSet;
+            if (currentWeek <= 2) {
+                exerciseSet = exercises['week1-4'];
+            } else if (currentWeek <= 4) {
+                exerciseSet = exercises['week3-4'];
+            } else if (currentWeek <= 10) {
+                exerciseSet = exercises['week5-10'];
+            } else {
+                exerciseSet = exercises['week11-12'];
+            }
+            
+            exerciseSet.forEach((exercise, index) => {
+                const card = document.createElement('div');
+                card.className = 'exercise-card';
+                if (completedExercises.has(index)) {
+                    card.classList.add('completed');
+                }
+                
+                card.innerHTML = `
+                    <div class="exercise-header">
+                        <div class="exercise-name">${exercise.name}</div>
+                        <div class="complete-checkbox ${completedExercises.has(index) ? 'checked' : ''}" 
+                             onclick="toggleExercise(${index})">
+                        </div>
+                    </div>
+                    <div class="exercise-details">
+                        <strong>${exercise.reps}</strong><br>
+                        ${exercise.description}
+                    </div>
+                    <div class="exercise-actions">
+                        <button class="btn btn-primary" 
+                                onclick="openVideo('${exercise.videoSearch}')">
+                            🎥 Watch Video
+                        </button>
+                        ${exercise.timer > 0 ? `
+                            <button class="btn btn-secondary" 
+                                    onclick="openTimer('${exercise.name}', ${exercise.timer})">
+                                ⏱️ Timer
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Toggle exercise completion
+        function toggleExercise(index) {
+            if (completedExercises.has(index)) {
+                completedExercises.delete(index);
+            } else {
+                completedExercises.add(index);
+            }
+            saveData();
+            updateExercises();
+            updateProgress();
+        }
+        
+        // Open video
+        function openVideo(searchTerm) {
+            window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`, '_blank');
+        }
+        
+        // Timer functions
+        function openTimer(name, seconds) {
+            document.getElementById('timerExerciseName').textContent = name;
+            timerSeconds = seconds;
+            updateTimerDisplay();
+            document.getElementById('timerModal').classList.add('active');
+        }
+        
+        function closeTimer() {
+            pauseTimer();
+            document.getElementById('timerModal').classList.remove('active');
+        }
+        
+        function startTimer() {
+            if (!timerRunning) {
+                timerRunning = true;
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        pauseTimer();
+                        alert('Timer complete! 🎉');
+                    }
+                }, 1000);
+            }
+        }
+        
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+        }
+        
+        function resetTimer() {
+            pauseTimer();
+            const name = document.getElementById('timerExerciseName').textContent;
+            // Find exercise timer value
+            let exerciseSet;
+            if (currentWeek <= 2) exerciseSet = exercises['week1-4'];
+            else if (currentWeek <= 4) exerciseSet = exercises['week3-4'];
+            else if (currentWeek <= 10) exerciseSet = exercises['week5-10'];
+            else exerciseSet = exercises['week11-12'];
+            
+            const exercise = exerciseSet.find(e => e.name === name);
+            if (exercise) {
+                timerSeconds = exercise.timer;
+                updateTimerDisplay();
+            }
+        }
+        
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60);
+            const secs = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+        
+        // Update progress
+        function updateProgress() {
+            // Calculate overall progress
+            const totalWeeks = 12;
+            const weeksCompleted = currentWeek - 1;
+            const percentComplete = Math.round((weeksCompleted / totalWeeks) * 100);
+            
+            document.getElementById('overallPercent').textContent = `${percentComplete}%`;
+            document.getElementById('overallProgress').style.width = `${percentComplete}%`;
+            
+            // Days completed (simplified)
+            const data = JSON.parse(localStorage.getItem('backRecoveryData') || '{}');
+            const daysCompleted = data.completedExercises ? 
+                Math.floor(data.completedExercises.length / 5) : 0;
+            document.getElementById('daysCompleted').textContent = daysCompleted;
+            
+            // Streak (simplified - shows current week)
+            document.getElementById('currentStreak').textContent = currentWeek;
+            
+            // Average pain
+            const painData = JSON.parse(localStorage.getItem('painData') || '[]');
+            if (painData.length > 0) {
+                const avg = painData.reduce((sum, p) => sum + p.level, 0) / painData.length;
+                document.getElementById('avgPain').textContent = avg.toFixed(1);
+            }
+            
+            // Weeks left
+            document.getElementById('weeksLeft').textContent = totalWeeks - currentWeek + 1;
+            
+            // Week progress
+            renderWeekProgress();
+        }
+        
+        // Render week progress
+        function renderWeekProgress() {
+            const container = document.getElementById('weekProgress');
+            container.innerHTML = '';
+            
+            const phases = [
+                { start: 1, end: 4, name: 'Phase 1: Control', color: 'phase-1' },
+                { start: 5, end: 10, name: 'Phase 2: Build', color: 'phase-2' },
+                { start: 11, end: 12, name: 'Phase 3: Run', color: 'phase-3' }
+            ];
+            
+            phases.forEach(phase => {
+                const phaseDiv = document.createElement('div');
+                phaseDiv.style.marginBottom = '15px';
+                phaseDiv.innerHTML = `<div class="phase-badge ${phase.color}" style="margin-bottom: 10px;">${phase.name}</div>`;
+                
+                for (let i = phase.start; i <= phase.end; i++) {
+                    const weekDiv = document.createElement('div');
+                    weekDiv.style.cssText = `
+                        padding: 8px 12px;
+                        background: ${i <= currentWeek ? 'var(--success)' : 'var(--bg)'};
+                        color: ${i <= currentWeek ? 'white' : 'var(--text)'};
+                        border-radius: 8px;
+                        margin: 5px 0;
+                        font-size: 0.9rem;
+                    `;
+                    weekDiv.textContent = `Week ${i} ${i <= currentWeek ? '✓' : ''}`;
+                    phaseDiv.appendChild(weekDiv);
+                }
+                
+                container.appendChild(phaseDiv);
+            });
+        }
+        
+        // Show section
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`${section}-section`).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+            
+            if (section === 'progress') {
+                updateProgress();
+            }
+        }
+        
+        // Initialize on load
+        window.onload = init;
+    </script>
+</body>
+</html>
